@@ -1,8 +1,10 @@
 from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
-from sklearn.decomposition import PCA
+from sklearn.decomposition import LatentDirichletAllocation
 
 from sklearn.cluster import KMeans
 from sklearn import metrics
+
+import numpy as np
 
 import matplotlib
 matplotlib.use('agg')
@@ -12,6 +14,7 @@ import os
 import codecs
 
 n_components = range(5, 15)
+
 # n_component = 15
 
 print("loading data...")
@@ -30,27 +33,26 @@ all_silhouette_scores = []
 all_calinski_scores = []
 
 for n_component in n_components:
-    print("Fitting the PCA model with TF-IDF features")
-    pca = PCA(n_components=n_component, random_state=1).fit_transform(tfidf.toarray())
+    print("Fitting the LDA model (Frobenius norm) with TF-IDF features")
+    lda = LatentDirichletAllocation(n_components=n_component, random_state=1, max_iter=1000).fit_transform(tfidf)
 
-    print("shape of pca features", pca.shape)    # (200, 10)
+    print("shape of nmf features", lda.shape)    # (200, 10)
 
-    print("\nApply PCA results on k-means")
-    index = [i for i in range(3, 50)]
+    print("\nApply lda results on k-means")
     silhouette_scores = []
     calinski_scores = []
     for i in index:
-        kmeans_model = KMeans(n_clusters=i, random_state=1).fit(pca)
+        kmeans_model = KMeans(n_clusters=i, random_state=1).fit(lda)
         labels = kmeans_model.labels_
 
         if i % 10 == 0:
             print("Performance with %d cluster: "%i)
-        silhouette_scores.append(metrics.silhouette_score(pca, labels))
-        calinski_scores.append(metrics.calinski_harabaz_score(pca, labels))
+        silhouette_scores.append(metrics.silhouette_score(lda, labels))
+        calinski_scores.append(metrics.calinski_harabaz_score(lda, labels))
 
         # print("Performance with %d cluster: "%i)
-        # print("\tsilhouette_score: ", metrics.silhouette_score(pca, labels))
-        # print("\tcalinski_harabaz_score: ", metrics.calinski_harabaz_score(pca, labels))
+        # print("\tsilhouette_score: ", metrics.silhouette_score(lda, labels))
+        # print("\tcalinski_harabaz_score: ", metrics.calinski_harabaz_score(lda, labels))
 
     all_silhouette_scores.append(silhouette_scores)
     all_calinski_scores.append(calinski_scores)
@@ -69,4 +71,4 @@ for calinski_scores in enumerate(all_calinski_scores):
     plt.legend()
 plt.title("calinski_scores")
 
-plt.savefig("PCA_kmeans.png")
+plt.savefig("LDA_kmeans.png")
