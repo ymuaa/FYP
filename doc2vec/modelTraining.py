@@ -11,7 +11,7 @@ from gensim.test.test_doc2vec import ConcatenatedDoc2Vec
 NewsDocument = namedtuple('NewsDocument', 'words tags')
 
 alldocs = []
-with smart_open('../data/small/sougo_news_corpus_seg.txt', 'rb', encoding='utf-8') as alldata:
+with smart_open('../data/sougo_sohunews_sw.txt', 'rb', encoding='utf-8') as alldata:
     for line_no, line in enumerate(alldata):
         tokens = gensim.utils.to_unicode(line).split()
         words = tokens[0:]
